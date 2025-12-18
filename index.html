@@ -31,14 +31,6 @@ input,select,textarea{width:100%;padding:8px;margin:5px 0}
 <p id="infoLogin"></p>
 <button onclick="showRegister()">Daftar Siswa</button>
 </div>
-// INIT KELAS & ABSEN
-for(let i=1;i<=10;i++){
- regKelas.innerHTML += `<option value="X-${i}">X-${i}</option>`;
-}
-
-for(let i=1;i<=40;i++){
- regAbsen.innerHTML += `<option value="${i}">${i}</option>`;
-}
 
 <!-- REGISTER -->
 <div id="registerBox" class="card hidden">
@@ -132,33 +124,74 @@ for(let i=1;i<=40;i++){
 </div>
 
 <script>
-let siswa=JSON.parse(localStorage.getItem('siswa'))||[];
-let materi=JSON.parse(localStorage.getItem('materi'))||{informatika:[],kka:[]};
-let soal=JSON.parse(localStorage.getItem('soal'))||{informatika:[],kka:[]};
+/* ===== INIT DATA ===== */
+let siswa = JSON.parse(localStorage.getItem('siswa')) || [];
+let materi = JSON.parse(localStorage.getItem('materi')) || {informatika:[],kka:[]};
+let soal   = JSON.parse(localStorage.getItem('soal'))   || {informatika:[],kka:[]};
 
-let currentMapel='';
+let currentMapel = '';
 
-// LOGIN
+/* ===== INIT KELAS & ABSEN ===== */
+for(let i=1;i<=10;i++){
+ regKelas.innerHTML += `<option value="X-${i}">X-${i}</option>`;
+}
+for(let i=1;i<=40;i++){
+ regAbsen.innerHTML += `<option value="${i}">${i}</option>`;
+}
+
+/* ===== LOGIN ===== */
 function login(){
- let u=loginUser.value,p=loginPass.value;
+ let u = loginUser.value;
+ let p = loginPass.value;
+
  if(u==='guru' && p==='admin123'){
-  loginBox.classList.add('hidden');guruBox.classList.remove('hidden');return;
+  loginBox.classList.add('hidden');
+  guruBox.classList.remove('hidden');
+  return;
  }
- let s=siswa.find(x=>x.username===u && x.password===p);
- if(!s){infoLogin.innerText='Belum punya akun, silahkan klik Daftar';return;}
- loginBox.classList.add('hidden');menuSiswa.classList.remove('hidden');
- infoSiswa.innerText='Selamat datang, '+s.nama;
+
+ let s = siswa.find(x=>x.username===u && x.password===p);
+ if(!s){
+  infoLogin.innerText='Belum punya akun, silahkan klik Daftar';
+  return;
+ }
+
+ loginBox.classList.add('hidden');
+ menuSiswa.classList.remove('hidden');
+ infoSiswa.innerText = `Selamat datang, ${s.nama} | ${s.kelas} | Absen ${s.absen}`;
 }
 
-function showRegister(){loginBox.classList.add('hidden');registerBox.classList.remove('hidden')}
-function backLogin(){registerBox.classList.add('hidden');loginBox.classList.remove('hidden')}
+/* ===== REGISTER ===== */
+function showRegister(){
+ loginBox.classList.add('hidden');
+ registerBox.classList.remove('hidden');
+}
+
+function backLogin(){
+ registerBox.classList.add('hidden');
+ loginBox.classList.remove('hidden');
+}
+
 function registerSiswa(){
- siswa.push({nama:regNama.value,username:regUser.value,password:regPass.value});
+ if(!regNama.value || !regUser.value || !regPass.value || !regKelas.value || !regAbsen.value){
+  alert('Semua data wajib diisi');
+  return;
+ }
+
+ siswa.push({
+  nama: regNama.value,
+  username: regUser.value,
+  password: regPass.value,
+  kelas: regKelas.value,
+  absen: regAbsen.value
+ });
+
  localStorage.setItem('siswa',JSON.stringify(siswa));
- alert('Pendaftaran berhasil');backLogin();
+ alert('Pendaftaran berhasil');
+ backLogin();
 }
 
-// ===== SISWA =====
+/* ===== SISWA ===== */
 function pilihMapel(m){
  currentMapel=m;
  menuSiswa.classList.add('hidden');
@@ -186,9 +219,9 @@ function bukaLatihan(){
     h+=`<label><input type="radio" name="s${i}" value="${o[0]}"> ${o}</label><br>`;
    });
   }else if(s.tipe==='singkat'){
-   h+=`<input id="j${i}">`;
+   h+=`<input>`;
   }else{
-   h+=`<textarea id="j${i}"></textarea>`;
+   h+=`<textarea></textarea>`;
   }
   h+='</div>';
   soalList.innerHTML+=h;
@@ -197,24 +230,14 @@ function bukaLatihan(){
 
 function kirimJawaban(){
  let skor=0;
-
  soal[currentMapel].forEach((s,i)=>{
   if(s.tipe==='pg'){
    let j=document.querySelector(`input[name="s${i}"]:checked`);
-   if(j && j.value===s.jawaban){
-    skor += Number(s.skor);
-   }
+   if(j && j.value===s.jawaban) skor+=Number(s.skor);
   }
  });
-
- // FEEDBACK HANYA UNTUK PILIHAN GANDA
- if(soal[currentMapel].some(s=>s.tipe==='pg')){
-  hasil.innerText = 'Skor Pilihan Ganda: ' + skor;
- } else {
-  hasil.innerText = 'Jawaban berhasil dikirim.';
- }
+ hasil.innerText='Skor Pilihan Ganda: '+skor;
 }
-
 
 function kembaliMenuMapel(){
  materiBox.classList.add('hidden');
@@ -227,7 +250,7 @@ function kembaliSiswa(){
  menuSiswa.classList.remove('hidden');
 }
 
-// ===== GURU =====
+/* ===== GURU ===== */
 function simpanMateri(){
  materi[mapelGuru.value].push({judul:judulMateri.value,isi:isiMateri.value});
  localStorage.setItem('materi',JSON.stringify(materi));
@@ -251,6 +274,3 @@ function logout(){location.reload()}
 
 </body>
 </html>
-
-
-
