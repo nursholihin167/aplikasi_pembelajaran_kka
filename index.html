@@ -2,174 +2,226 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Aplikasi Pembelajaran Informatika & KKA</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aplikasi Pembelajaran SMA</title>
 <style>
-body{font-family:Segoe UI,Arial,sans-serif;margin:0;background:#f2f4f8}
+body{font-family:Segoe UI;background:#f2f4f8;margin:0}
 header{background:#1e3c72;color:#fff;padding:15px;text-align:center}
-.container{max-width:1100px;margin:auto;padding:20px}
-button{padding:12px 16px;margin:6px;border:none;border-radius:8px;background:#1e3c72;color:#fff;cursor:pointer}
+.container{max-width:1000px;margin:auto;padding:20px}
+.card{background:#fff;padding:15px;border-radius:10px;margin:15px 0}
+button{padding:10px 15px;border:none;border-radius:8px;background:#1e3c72;color:#fff;margin:5px}
 button:hover{background:#2a5298}
-.back{background:#777}
-.card{background:#fff;border-radius:10px;padding:15px;margin:15px 0}
+input,select,textarea{width:100%;padding:8px;margin:5px 0}
 .hidden{display:none}
-input,textarea,select{width:100%;padding:10px;margin:6px 0;border-radius:6px;border:1px solid #ccc}
-a{color:#1e3c72}
 </style>
 </head>
 <body>
+
 <header>
-<h1>Aplikasi Pembelajaran SMA</h1>
-<p>Informatika & KKA</p>
+<h2>Aplikasi Pembelajaran Informatika & KKA</h2>
 </header>
 
 <div class="container">
 
 <!-- LOGIN -->
 <div id="loginBox" class="card">
-<h2>Login</h2>
-<input id="loginUser" placeholder="Nama Lengkap">
-<button onclick="loginSiswa()">Login Siswa</button>
+<h3>Login</h3>
+<input id="loginUser" placeholder="Username">
+<input id="loginPass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<p id="infoLogin"></p>
 <button onclick="showRegister()">Daftar Siswa</button>
-<hr>
-<h3>Login Guru</h3>
-<input id="guruUser" placeholder="Username">
-<input id="guruPass" type="password" placeholder="Password">
-<button onclick="loginGuru()">Login Guru</button>
 </div>
 
-<!-- REGISTER SISWA -->
+<!-- REGISTER -->
 <div id="registerBox" class="card hidden">
-<h2>Daftar Siswa</h2>
+<h3>Daftar Siswa</h3>
 <input id="regNama" placeholder="Nama Lengkap">
-<select id="regKelas"></select>
-<select id="regAbsen"></select>
+<input id="regUser" placeholder="Username">
+<input id="regPass" type="password" placeholder="Password">
 <button onclick="registerSiswa()">Daftar</button>
-<button class="back" onclick="backLogin()">Kembali</button>
+<button onclick="backLogin()">Kembali</button>
 </div>
 
 <!-- MENU SISWA -->
 <div id="menuSiswa" class="hidden">
-<h2>Menu Siswa</h2>
-<button onclick="pilihMapel('informatika')">📘 Informatika</button>
-<button onclick="pilihMapel('kka')">🤖 KKA</button>
-<button class="back" onclick="logout()">Logout</button>
+<h3 id="infoSiswa"></h3>
+<button onclick="bukaMapel('informatika')">📘 Informatika</button>
+<button onclick="bukaMapel('kka')">🤖 KKA</button>
+<button onclick="logout()">Logout</button>
 </div>
 
-<!-- MATERI -->
+<!-- MATERI SISWA -->
 <div id="materiBox" class="hidden">
-<h2 id="judulMapel"></h2>
+<h3 id="judulMapel"></h3>
 <div id="materiList"></div>
-<button onclick="lanjutLatihan()">Lanjut ke Latihan / Kuis</button>
-<button class="back" onclick="backMenuSiswa()">⬅ Kembali</button>
+<button onclick="bukaLatihan()">Kerjakan Latihan</button>
+<button onclick="kembaliSiswa()">Kembali</button>
 </div>
 
-<!-- LATIHAN / KUIS -->
-<div id="kuisBox" class="hidden">
-<h2>Latihan / Kuis</h2>
-<div class="card">
-<h4>1. Pilihan Ganda</h4>
-<p>AI sebaiknya digunakan untuk …</p>
-<label><input type="radio" name="pg" value="A"> Mencontek</label><br>
-<label><input type="radio" name="pg" value="B"> Membantu belajar</label><br>
-</div>
-<div class="card">
-<h4>2. Benar / Salah</h4>
-<p>Menggunakan AI tanpa memahami jawabannya adalah etis.</p>
-<select id="bs"><option>Benar</option><option>Salah</option></select>
-</div>
-<div class="card">
-<h4>3. Jawaban Singkat</h4>
-<input id="singkat" placeholder="Jawaban singkat">
-</div>
-<div class="card">
-<h4>4. Jawaban Panjang</h4>
-<textarea id="panjang" placeholder="Tuliskan pendapatmu"></textarea>
-</div>
+<!-- LATIHAN SISWA -->
+<div id="latihanBox" class="hidden">
+<h3>Latihan</h3>
+<div id="soalList"></div>
 <button onclick="kirimJawaban()">Kirim Jawaban</button>
 <p id="hasil"></p>
-<button class="back" onclick="backMenuSiswa()">⬅ Kembali</button>
+<button onclick="kembaliSiswa()">Kembali</button>
 </div>
 
 <!-- MENU GURU -->
 <div id="guruBox" class="hidden">
-<h2>Menu Guru – Kelola Materi</h2>
+<h3>Menu Guru</h3>
+
 <select id="mapelGuru">
 <option value="informatika">Informatika</option>
 <option value="kka">KKA</option>
 </select>
+
+<h4>Materi</h4>
 <input id="judulMateri" placeholder="Judul Materi">
 <textarea id="isiMateri" placeholder="Isi Materi"></textarea>
-<input id="linkFile" placeholder="Link File (PDF/DOCX/PPTX)">
-<input id="linkVideo" placeholder="Link Video YouTube">
 <button onclick="simpanMateri()">Simpan Materi</button>
-<button class="back" onclick="logout()">Logout</button>
+
+<hr>
+
+<h4>Soal</h4>
+<select id="tipeSoal">
+<option value="pg">Pilihan Ganda</option>
+<option value="singkat">Jawaban Singkat</option>
+<option value="panjang">Jawaban Panjang</option>
+</select>
+
+<textarea id="pertanyaan" placeholder="Pertanyaan"></textarea>
+
+<div id="opsiPG">
+<input id="opsiA" placeholder="Opsi A">
+<input id="opsiB" placeholder="Opsi B">
+<input id="opsiC" placeholder="Opsi C">
+<input id="opsiD" placeholder="Opsi D">
+<input id="jawabanPG" placeholder="Jawaban Benar (A/B/C/D)">
+<input id="skorPG" type="number" placeholder="Skor Soal">
+</div>
+
+<button onclick="simpanSoal()">Simpan Soal</button>
+<button onclick="logout()">Logout</button>
 </div>
 
 </div>
 
 <script>
-// init kelas & absen
-for(let i=1;i<=10;i++) regKelas.innerHTML+=`<option>X-${i}</option>`;
-for(let i=1;i<=40;i++) regAbsen.innerHTML+=`<option>${i}</option>`;
+let siswa = JSON.parse(localStorage.getItem('siswa'))||[];
+let materi = JSON.parse(localStorage.getItem('materi'))||{informatika:[],kka:[]};
+let soal = JSON.parse(localStorage.getItem('soal'))||{informatika:[],kka:[]};
 
-let siswa=JSON.parse(localStorage.getItem('siswa'))||[];
-let materi=JSON.parse(localStorage.getItem('materi'))||{informatika:[],kka:[]};
 let currentMapel='';
-let sudahBacaMateri=false;
+let jawabanSiswa=[];
 
-function showRegister(){loginBox.classList.add('hidden');registerBox.classList.remove('hidden');}
-function backLogin(){registerBox.classList.add('hidden');loginBox.classList.remove('hidden');}
-
-function registerSiswa(){
- siswa.push({nama:regNama.value,kelas:regKelas.value,absen:regAbsen.value});
- localStorage.setItem('siswa',JSON.stringify(siswa));
- alert('Pendaftaran berhasil');
- backLogin();
-}
-
-function loginSiswa(){
- let nama=loginUser.value;
- let cek=siswa.find(s=>s.nama===nama);
- if(!cek){alert('Siswa belum terdaftar');return;}
+// LOGIN
+function login(){
+ let u=loginUser.value,p=loginPass.value;
+ if(u==='guru' && p==='admin123'){
+  loginBox.classList.add('hidden');
+  guruBox.classList.remove('hidden');return;
+ }
+ let s=siswa.find(x=>x.username===u && x.password===p);
+ if(!s){infoLogin.innerText='Belum punya akun, silahkan klik Daftar';return;}
  loginBox.classList.add('hidden');
  menuSiswa.classList.remove('hidden');
+ infoSiswa.innerText=`Selamat datang, ${s.nama}`;
 }
 
-function loginGuru(){
- if(guruUser.value==='guru' && guruPass.value==='admin123'){
-  loginBox.classList.add('hidden');
-  guruBox.classList.remove('hidden');
- }else alert('Login guru gagal');
+function showRegister(){loginBox.classList.add('hidden');registerBox.classList.remove('hidden')}
+function backLogin(){registerBox.classList.add('hidden');loginBox.classList.remove('hidden')}
+
+function registerSiswa(){
+ siswa.push({nama:regNama.value,username:regUser.value,password:regPass.value});
+ localStorage.setItem('siswa',JSON.stringify(siswa));
+ alert('Berhasil daftar');backLogin();
 }
 
-function pilihMapel(m){currentMapel=m;menuSiswa.classList.add('hidden');materiBox.classList.remove('hidden');judulMapel.innerText=m==='informatika'?'Materi Informatika':'Materi KKA';tampilMateri();}
+// ===== SISWA =====
+function bukaMapel(m){
+ currentMapel=m;
+ menuSiswa.classList.add('hidden');
+ materiBox.classList.remove('hidden');
+ judulMapel.innerText='Materi '+m.toUpperCase();
+ tampilMateri();
+}
 
 function tampilMateri(){
  materiList.innerHTML='';
- sudahBacaMateri=true;
  materi[currentMapel].forEach(m=>{
-  materiList.innerHTML+=`<div class='card'><h3>${m.judul}</h3><p>${m.isi}</p>${m.file?`<p>📎 <a href='${m.file}' target='_blank'>File Materi</a></p>`:''}${m.video?`<p>🎥 <a href='${m.video}' target='_blank'>Video</a></p>`:''}</div>`;
+  materiList.innerHTML+=`<div class="card"><h4>${m.judul}</h4><p>${m.isi}</p></div>`;
  });
 }
 
-function lanjutLatihan(){
- if(!sudahBacaMateri){alert('Pelajari materi terlebih dahulu');return;}
+function bukaLatihan(){
  materiBox.classList.add('hidden');
- kuisBox.classList.remove('hidden');
+ latihanBox.classList.remove('hidden');
+ tampilSoal();
 }
 
-function kirimJawaban(){hasil.innerText='Jawaban berhasil dikirim. Terima kasih sudah belajar dengan jujur.';}
+function tampilSoal(){
+ soalList.innerHTML='';
+ jawabanSiswa=[];
+ soal[currentMapel].forEach((s,i)=>{
+  let html=`<div class="card"><p>${i+1}. ${s.pertanyaan}</p>`;
+  if(s.tipe==='pg'){
+   s.opsi.forEach(o=>{
+    html+=`<label><input type="radio" name="s${i}" value="${o[0]}"> ${o}</label><br>`;
+   });
+  }else if(s.tipe==='singkat'){
+   html+=`<input id="j${i}">`;
+  }else{
+   html+=`<textarea id="j${i}"></textarea>`;
+  }
+  html+='</div>';
+  soalList.innerHTML+=html;
+ });
+}
 
-function backMenuSiswa(){materiBox.classList.add('hidden');kuisBox.classList.add('hidden');menuSiswa.classList.remove('hidden');}
-function logout(){location.reload();}
+function kirimJawaban(){
+ let skor=0;
+ soal[currentMapel].forEach((s,i)=>{
+  if(s.tipe==='pg'){
+   let j=document.querySelector(`input[name="s${i}"]:checked`);
+   if(j && j.value===s.jawaban) skor+=Number(s.skor);
+  }
+ });
+ hasil.innerText='Skor Pilihan Ganda: '+skor;
+}
 
+function kembaliSiswa(){
+ latihanBox.classList.add('hidden');
+ materiBox.classList.add('hidden');
+ menuSiswa.classList.remove('hidden');
+}
+
+// ===== GURU =====
 function simpanMateri(){
- materi[mapelGuru.value].push({judul:judulMateri.value,isi:isiMateri.value,file:linkFile.value,video:linkVideo.value});
+ materi[mapelGuru.value].push({judul:judulMateri.value,isi:isiMateri.value});
  localStorage.setItem('materi',JSON.stringify(materi));
- alert('Materi disimpan');
- judulMateri.value=isiMateri.value=linkFile.value=linkVideo.value='';
+ alert('Materi tersimpan');
 }
+
+function simpanSoal(){
+ let data={tipe:tipeSoal.value,pertanyaan:pertanyaan.value};
+ if(tipeSoal.value==='pg'){
+  data.opsi=[
+   'A. '+opsiA.value,
+   'B. '+opsiB.value,
+   'C. '+opsiC.value,
+   'D. '+opsiD.value
+  ];
+  data.jawaban=jawabanPG.value;
+  data.skor=skorPG.value;
+ }
+ soal[mapelGuru.value].push(data);
+ localStorage.setItem('soal',JSON.stringify(soal));
+ alert('Soal tersimpan');
+}
+
+function logout(){location.reload()}
 </script>
+
 </body>
 </html>
