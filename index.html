@@ -14,7 +14,7 @@ button:hover{background:#2a5298}
 .card{background:#fff;border-radius:10px;padding:15px;margin:15px 0}
 .hidden{display:none}
 input,select,textarea{width:100%;padding:10px;margin:6px 0;border-radius:6px;border:1px solid #ccc}
-small{color:#666}
+small{color:#c0392b}
 </style>
 </head>
 <body>
@@ -30,9 +30,9 @@ small{color:#666}
 <div id="loginBox" class="card">
 <h2>Login</h2>
 <input id="loginUser" placeholder="Username">
-<input id="loginPass" type="password" placeholder="Password (khusus guru)">
+<input id="loginPass" type="password" placeholder="Password">
 <button onclick="login()">Login</button>
-<p><small id="infoLogin"></small></p>
+<small id="infoLogin"></small><br>
 <button onclick="showRegister()">Daftar Siswa</button>
 </div>
 
@@ -41,6 +41,7 @@ small{color:#666}
 <h2>Daftar Siswa</h2>
 <input id="regNama" placeholder="Nama Lengkap">
 <input id="regUser" placeholder="Username">
+<input id="regPass" type="password" placeholder="Password">
 <select id="regKelas"></select>
 <select id="regAbsen"></select>
 <button onclick="registerSiswa()">Daftar</button>
@@ -93,21 +94,23 @@ function login(){
  }
 
  // LOGIN SISWA
- let s = siswa.find(x=>x.username===user);
+ let s = siswa.find(x=>x.username===user && x.password===pass);
  if(!s){
-  infoLogin.innerText = "Belum punya akun? Silakan daftar.";
+  infoLogin.innerText = "Belum punya akun, silahkan klik Daftar";
   return;
  }
 
  loginBox.classList.add('hidden');
  menuSiswa.classList.remove('hidden');
  siswaInfo.innerText = `Selamat datang, ${s.nama} (${s.username})`;
+ infoLogin.innerText = "";
 }
 
-// REGISTER
+// REGISTER SISWA
 function showRegister(){
  loginBox.classList.add('hidden');
  registerBox.classList.remove('hidden');
+ infoLogin.innerText="";
 }
 
 function backLogin(){
@@ -116,6 +119,11 @@ function backLogin(){
 }
 
 function registerSiswa(){
+ if(!regNama.value || !regUser.value || !regPass.value){
+  alert('Semua data wajib diisi');
+  return;
+ }
+
  if(siswa.find(s=>s.username===regUser.value)){
   alert('Username sudah digunakan');
   return;
@@ -124,6 +132,7 @@ function registerSiswa(){
  siswa.push({
   nama: regNama.value,
   username: regUser.value,
+  password: regPass.value,
   kelas: regKelas.value,
   absen: regAbsen.value
  });
