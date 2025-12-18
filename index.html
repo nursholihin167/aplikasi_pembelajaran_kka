@@ -180,14 +180,24 @@ function bukaLatihan(){
 
 function kirimJawaban(){
  let skor=0;
+
  soal[currentMapel].forEach((s,i)=>{
   if(s.tipe==='pg'){
    let j=document.querySelector(`input[name="s${i}"]:checked`);
-   if(j && j.value===s.jawaban) skor+=Number(s.skor);
+   if(j && j.value===s.jawaban){
+    skor += Number(s.skor);
+   }
   }
  });
- hasil.innerText='Skor Pilihan Ganda: '+skor;
+
+ // FEEDBACK HANYA UNTUK PILIHAN GANDA
+ if(soal[currentMapel].some(s=>s.tipe==='pg')){
+  hasil.innerText = 'Skor Pilihan Ganda: ' + skor;
+ } else {
+  hasil.innerText = 'Jawaban berhasil dikirim.';
+ }
 }
+
 
 function kembaliMenuMapel(){
  materiBox.classList.add('hidden');
@@ -224,3 +234,4 @@ function logout(){location.reload()}
 
 </body>
 </html>
+
