@@ -45,26 +45,33 @@ input,select,textarea{width:100%;padding:8px;margin:5px 0}
 <!-- MENU SISWA -->
 <div id="menuSiswa" class="hidden">
 <h3 id="infoSiswa"></h3>
-<button onclick="bukaMapel('informatika')">📘 Informatika</button>
-<button onclick="bukaMapel('kka')">🤖 KKA</button>
+<button onclick="pilihMapel('informatika')">📘 Informatika</button>
+<button onclick="pilihMapel('kka')">🤖 KKA</button>
 <button onclick="logout()">Logout</button>
 </div>
 
-<!-- MATERI SISWA -->
-<div id="materiBox" class="hidden">
+<!-- MENU MAPEL -->
+<div id="menuMapel" class="hidden">
 <h3 id="judulMapel"></h3>
-<div id="materiList"></div>
-<button onclick="bukaLatihan()">Kerjakan Latihan</button>
-<button onclick="kembaliSiswa()">Kembali</button>
+<button onclick="bukaMateri()">📖 Materi</button>
+<button onclick="bukaLatihan()">📝 Latihan</button>
+<button onclick="kembaliSiswa()">⬅ Kembali</button>
 </div>
 
-<!-- LATIHAN SISWA -->
+<!-- MATERI -->
+<div id="materiBox" class="hidden">
+<h3>Materi</h3>
+<div id="materiList"></div>
+<button onclick="kembaliMenuMapel()">⬅ Kembali</button>
+</div>
+
+<!-- LATIHAN -->
 <div id="latihanBox" class="hidden">
 <h3>Latihan</h3>
 <div id="soalList"></div>
 <button onclick="kirimJawaban()">Kirim Jawaban</button>
 <p id="hasil"></p>
-<button onclick="kembaliSiswa()">Kembali</button>
+<button onclick="kembaliMenuMapel()">⬅ Kembali</button>
 </div>
 
 <!-- MENU GURU -->
@@ -83,7 +90,7 @@ input,select,textarea{width:100%;padding:8px;margin:5px 0}
 
 <hr>
 
-<h4>Soal</h4>
+<h4>Latihan / Soal</h4>
 <select id="tipeSoal">
 <option value="pg">Pilihan Ganda</option>
 <option value="singkat">Jawaban Singkat</option>
@@ -108,46 +115,43 @@ input,select,textarea{width:100%;padding:8px;margin:5px 0}
 </div>
 
 <script>
-let siswa = JSON.parse(localStorage.getItem('siswa'))||[];
-let materi = JSON.parse(localStorage.getItem('materi'))||{informatika:[],kka:[]};
-let soal = JSON.parse(localStorage.getItem('soal'))||{informatika:[],kka:[]};
+let siswa=JSON.parse(localStorage.getItem('siswa'))||[];
+let materi=JSON.parse(localStorage.getItem('materi'))||{informatika:[],kka:[]};
+let soal=JSON.parse(localStorage.getItem('soal'))||{informatika:[],kka:[]};
 
 let currentMapel='';
-let jawabanSiswa=[];
 
 // LOGIN
 function login(){
  let u=loginUser.value,p=loginPass.value;
  if(u==='guru' && p==='admin123'){
-  loginBox.classList.add('hidden');
-  guruBox.classList.remove('hidden');return;
+  loginBox.classList.add('hidden');guruBox.classList.remove('hidden');return;
  }
  let s=siswa.find(x=>x.username===u && x.password===p);
  if(!s){infoLogin.innerText='Belum punya akun, silahkan klik Daftar';return;}
- loginBox.classList.add('hidden');
- menuSiswa.classList.remove('hidden');
- infoSiswa.innerText=`Selamat datang, ${s.nama}`;
+ loginBox.classList.add('hidden');menuSiswa.classList.remove('hidden');
+ infoSiswa.innerText='Selamat datang, '+s.nama;
 }
 
 function showRegister(){loginBox.classList.add('hidden');registerBox.classList.remove('hidden')}
 function backLogin(){registerBox.classList.add('hidden');loginBox.classList.remove('hidden')}
-
 function registerSiswa(){
  siswa.push({nama:regNama.value,username:regUser.value,password:regPass.value});
  localStorage.setItem('siswa',JSON.stringify(siswa));
- alert('Berhasil daftar');backLogin();
+ alert('Pendaftaran berhasil');backLogin();
 }
 
 // ===== SISWA =====
-function bukaMapel(m){
+function pilihMapel(m){
  currentMapel=m;
  menuSiswa.classList.add('hidden');
- materiBox.classList.remove('hidden');
- judulMapel.innerText='Materi '+m.toUpperCase();
- tampilMateri();
+ menuMapel.classList.remove('hidden');
+ judulMapel.innerText='Mata Pelajaran '+m.toUpperCase();
 }
 
-function tampilMateri(){
+function bukaMateri(){
+ menuMapel.classList.add('hidden');
+ materiBox.classList.remove('hidden');
  materiList.innerHTML='';
  materi[currentMapel].forEach(m=>{
   materiList.innerHTML+=`<div class="card"><h4>${m.judul}</h4><p>${m.isi}</p></div>`;
@@ -155,27 +159,22 @@ function tampilMateri(){
 }
 
 function bukaLatihan(){
- materiBox.classList.add('hidden');
+ menuMapel.classList.add('hidden');
  latihanBox.classList.remove('hidden');
- tampilSoal();
-}
-
-function tampilSoal(){
  soalList.innerHTML='';
- jawabanSiswa=[];
  soal[currentMapel].forEach((s,i)=>{
-  let html=`<div class="card"><p>${i+1}. ${s.pertanyaan}</p>`;
+  let h=`<div class="card"><p>${i+1}. ${s.pertanyaan}</p>`;
   if(s.tipe==='pg'){
    s.opsi.forEach(o=>{
-    html+=`<label><input type="radio" name="s${i}" value="${o[0]}"> ${o}</label><br>`;
+    h+=`<label><input type="radio" name="s${i}" value="${o[0]}"> ${o}</label><br>`;
    });
   }else if(s.tipe==='singkat'){
-   html+=`<input id="j${i}">`;
+   h+=`<input id="j${i}">`;
   }else{
-   html+=`<textarea id="j${i}"></textarea>`;
+   h+=`<textarea id="j${i}"></textarea>`;
   }
-  html+='</div>';
-  soalList.innerHTML+=html;
+  h+='</div>';
+  soalList.innerHTML+=h;
  });
 }
 
@@ -190,9 +189,14 @@ function kirimJawaban(){
  hasil.innerText='Skor Pilihan Ganda: '+skor;
 }
 
-function kembaliSiswa(){
- latihanBox.classList.add('hidden');
+function kembaliMenuMapel(){
  materiBox.classList.add('hidden');
+ latihanBox.classList.add('hidden');
+ menuMapel.classList.remove('hidden');
+}
+
+function kembaliSiswa(){
+ menuMapel.classList.add('hidden');
  menuSiswa.classList.remove('hidden');
 }
 
@@ -204,18 +208,13 @@ function simpanMateri(){
 }
 
 function simpanSoal(){
- let data={tipe:tipeSoal.value,pertanyaan:pertanyaan.value};
- if(tipeSoal.value==='pg'){
-  data.opsi=[
-   'A. '+opsiA.value,
-   'B. '+opsiB.value,
-   'C. '+opsiC.value,
-   'D. '+opsiD.value
-  ];
-  data.jawaban=jawabanPG.value;
-  data.skor=skorPG.value;
+ let d={tipe:tipeSoal.value,pertanyaan:pertanyaan.value};
+ if(d.tipe==='pg'){
+  d.opsi=['A. '+opsiA.value,'B. '+opsiB.value,'C. '+opsiC.value,'D. '+opsiD.value];
+  d.jawaban=jawabanPG.value;
+  d.skor=skorPG.value;
  }
- soal[mapelGuru.value].push(data);
+ soal[mapelGuru.value].push(d);
  localStorage.setItem('soal',JSON.stringify(soal));
  alert('Soal tersimpan');
 }
