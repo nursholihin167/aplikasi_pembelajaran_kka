@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Aplikasi Pembelajaran SMA</title>
+<title>Aplikasi Pembelajaran Informatika & KKA</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body{font-family:Segoe UI,Arial,sans-serif;margin:0;background:#f2f4f8}
@@ -13,12 +13,11 @@ button:hover{background:#2a5298}
 .back{background:#777}
 .card{background:#fff;border-radius:10px;padding:15px;margin:15px 0}
 .hidden{display:none}
-input,select,textarea{width:100%;padding:10px;margin:6px 0;border-radius:6px;border:1px solid #ccc}
-small{color:#c0392b}
+input,textarea,select{width:100%;padding:10px;margin:6px 0;border-radius:6px;border:1px solid #ccc}
+a{color:#1e3c72}
 </style>
 </head>
 <body>
-
 <header>
 <h1>Aplikasi Pembelajaran SMA</h1>
 <p>Informatika & KKA</p>
@@ -29,19 +28,20 @@ small{color:#c0392b}
 <!-- LOGIN -->
 <div id="loginBox" class="card">
 <h2>Login</h2>
-<input id="loginUser" placeholder="Username">
-<input id="loginPass" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
-<small id="infoLogin"></small><br>
+<input id="loginUser" placeholder="Nama Lengkap">
+<button onclick="loginSiswa()">Login Siswa</button>
 <button onclick="showRegister()">Daftar Siswa</button>
+<hr>
+<h3>Login Guru</h3>
+<input id="guruUser" placeholder="Username">
+<input id="guruPass" type="password" placeholder="Password">
+<button onclick="loginGuru()">Login Guru</button>
 </div>
 
 <!-- REGISTER SISWA -->
 <div id="registerBox" class="card hidden">
 <h2>Daftar Siswa</h2>
 <input id="regNama" placeholder="Nama Lengkap">
-<input id="regUser" placeholder="Username">
-<input id="regPass" type="password" placeholder="Password">
 <select id="regKelas"></select>
 <select id="regAbsen"></select>
 <button onclick="registerSiswa()">Daftar</button>
@@ -50,22 +50,57 @@ small{color:#c0392b}
 
 <!-- MENU SISWA -->
 <div id="menuSiswa" class="hidden">
-<h2 id="siswaInfo"></h2>
+<h2>Menu Siswa</h2>
 <button onclick="pilihMapel('informatika')">📘 Informatika</button>
 <button onclick="pilihMapel('kka')">🤖 KKA</button>
 <button class="back" onclick="logout()">Logout</button>
 </div>
 
+<!-- MATERI -->
+<div id="materiBox" class="hidden">
+<h2 id="judulMapel"></h2>
+<div id="materiList"></div>
+<button onclick="lanjutLatihan()">Lanjut ke Latihan / Kuis</button>
+<button class="back" onclick="backMenuSiswa()">⬅ Kembali</button>
+</div>
+
+<!-- LATIHAN / KUIS -->
+<div id="kuisBox" class="hidden">
+<h2>Latihan / Kuis</h2>
+<div class="card">
+<h4>1. Pilihan Ganda</h4>
+<p>AI sebaiknya digunakan untuk …</p>
+<label><input type="radio" name="pg" value="A"> Mencontek</label><br>
+<label><input type="radio" name="pg" value="B"> Membantu belajar</label><br>
+</div>
+<div class="card">
+<h4>2. Benar / Salah</h4>
+<p>Menggunakan AI tanpa memahami jawabannya adalah etis.</p>
+<select id="bs"><option>Benar</option><option>Salah</option></select>
+</div>
+<div class="card">
+<h4>3. Jawaban Singkat</h4>
+<input id="singkat" placeholder="Jawaban singkat">
+</div>
+<div class="card">
+<h4>4. Jawaban Panjang</h4>
+<textarea id="panjang" placeholder="Tuliskan pendapatmu"></textarea>
+</div>
+<button onclick="kirimJawaban()">Kirim Jawaban</button>
+<p id="hasil"></p>
+<button class="back" onclick="backMenuSiswa()">⬅ Kembali</button>
+</div>
+
 <!-- MENU GURU -->
 <div id="guruBox" class="hidden">
-<h2>Menu Guru</h2>
+<h2>Menu Guru – Kelola Materi</h2>
 <select id="mapelGuru">
 <option value="informatika">Informatika</option>
 <option value="kka">KKA</option>
 </select>
 <input id="judulMateri" placeholder="Judul Materi">
 <textarea id="isiMateri" placeholder="Isi Materi"></textarea>
-<input id="linkFile" placeholder="Link File">
+<input id="linkFile" placeholder="Link File (PDF/DOCX/PPTX)">
 <input id="linkVideo" placeholder="Link Video YouTube">
 <button onclick="simpanMateri()">Simpan Materi</button>
 <button class="back" onclick="logout()">Logout</button>
@@ -74,96 +109,67 @@ small{color:#c0392b}
 </div>
 
 <script>
-// INIT
+// init kelas & absen
 for(let i=1;i<=10;i++) regKelas.innerHTML+=`<option>X-${i}</option>`;
 for(let i=1;i<=40;i++) regAbsen.innerHTML+=`<option>${i}</option>`;
 
-let siswa = JSON.parse(localStorage.getItem('siswa')) || [];
-let materi = JSON.parse(localStorage.getItem('materi')) || {informatika:[],kka:[]};
+let siswa=JSON.parse(localStorage.getItem('siswa'))||[];
+let materi=JSON.parse(localStorage.getItem('materi'))||{informatika:[],kka:[]};
+let currentMapel='';
+let sudahBacaMateri=false;
 
-// LOGIN GABUNGAN
-function login(){
- let user = loginUser.value;
- let pass = loginPass.value;
-
- // LOGIN GURU
- if(user==='guru' && pass==='admin123'){
-  loginBox.classList.add('hidden');
-  guruBox.classList.remove('hidden');
-  return;
- }
-
- // LOGIN SISWA
- let s = siswa.find(x=>x.username===user && x.password===pass);
- if(!s){
-  infoLogin.innerText = "Belum punya akun, silahkan klik Daftar";
-  return;
- }
-
- loginBox.classList.add('hidden');
- menuSiswa.classList.remove('hidden');
- siswaInfo.innerText = `Selamat datang, ${s.nama} (${s.username})`;
- infoLogin.innerText = "";
-}
-
-// REGISTER SISWA
-function showRegister(){
- loginBox.classList.add('hidden');
- registerBox.classList.remove('hidden');
- infoLogin.innerText="";
-}
-
-function backLogin(){
- registerBox.classList.add('hidden');
- loginBox.classList.remove('hidden');
-}
+function showRegister(){loginBox.classList.add('hidden');registerBox.classList.remove('hidden');}
+function backLogin(){registerBox.classList.add('hidden');loginBox.classList.remove('hidden');}
 
 function registerSiswa(){
- if(!regNama.value || !regUser.value || !regPass.value){
-  alert('Semua data wajib diisi');
-  return;
- }
-
- if(siswa.find(s=>s.username===regUser.value)){
-  alert('Username sudah digunakan');
-  return;
- }
-
- siswa.push({
-  nama: regNama.value,
-  username: regUser.value,
-  password: regPass.value,
-  kelas: regKelas.value,
-  absen: regAbsen.value
- });
-
+ siswa.push({nama:regNama.value,kelas:regKelas.value,absen:regAbsen.value});
  localStorage.setItem('siswa',JSON.stringify(siswa));
  alert('Pendaftaran berhasil');
  backLogin();
 }
 
-// MENU SISWA
-function pilihMapel(m){
- alert('Materi '+m+' ditampilkan (contoh)');
+function loginSiswa(){
+ let nama=loginUser.value;
+ let cek=siswa.find(s=>s.nama===nama);
+ if(!cek){alert('Siswa belum terdaftar');return;}
+ loginBox.classList.add('hidden');
+ menuSiswa.classList.remove('hidden');
 }
 
-// GURU
-function simpanMateri(){
- materi[mapelGuru.value].push({
-  judul: judulMateri.value,
-  isi: isiMateri.value,
-  file: linkFile.value,
-  video: linkVideo.value
+function loginGuru(){
+ if(guruUser.value==='guru' && guruPass.value==='admin123'){
+  loginBox.classList.add('hidden');
+  guruBox.classList.remove('hidden');
+ }else alert('Login guru gagal');
+}
+
+function pilihMapel(m){currentMapel=m;menuSiswa.classList.add('hidden');materiBox.classList.remove('hidden');judulMapel.innerText=m==='informatika'?'Materi Informatika':'Materi KKA';tampilMateri();}
+
+function tampilMateri(){
+ materiList.innerHTML='';
+ sudahBacaMateri=true;
+ materi[currentMapel].forEach(m=>{
+  materiList.innerHTML+=`<div class='card'><h3>${m.judul}</h3><p>${m.isi}</p>${m.file?`<p>📎 <a href='${m.file}' target='_blank'>File Materi</a></p>`:''}${m.video?`<p>🎥 <a href='${m.video}' target='_blank'>Video</a></p>`:''}</div>`;
  });
+}
+
+function lanjutLatihan(){
+ if(!sudahBacaMateri){alert('Pelajari materi terlebih dahulu');return;}
+ materiBox.classList.add('hidden');
+ kuisBox.classList.remove('hidden');
+}
+
+function kirimJawaban(){hasil.innerText='Jawaban berhasil dikirim. Terima kasih sudah belajar dengan jujur.';}
+
+function backMenuSiswa(){materiBox.classList.add('hidden');kuisBox.classList.add('hidden');menuSiswa.classList.remove('hidden');}
+function logout(){location.reload();}
+
+function simpanMateri(){
+ materi[mapelGuru.value].push({judul:judulMateri.value,isi:isiMateri.value,file:linkFile.value,video:linkVideo.value});
  localStorage.setItem('materi',JSON.stringify(materi));
- alert('Materi tersimpan');
+ alert('Materi disimpan');
  judulMateri.value=isiMateri.value=linkFile.value=linkVideo.value='';
 }
-
-function logout(){
- location.reload();
-}
 </script>
-
 </body>
 </html>
