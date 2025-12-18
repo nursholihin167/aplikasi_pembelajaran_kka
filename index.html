@@ -124,25 +124,23 @@ input,select,textarea{width:100%;padding:8px;margin:5px 0}
 </div>
 
 <script>
-/* ===== INIT DATA ===== */
+/* ===== DATA ===== */
 let siswa = JSON.parse(localStorage.getItem('siswa')) || [];
 let materi = JSON.parse(localStorage.getItem('materi')) || {informatika:[],kka:[]};
 let soal   = JSON.parse(localStorage.getItem('soal'))   || {informatika:[],kka:[]};
-
 let currentMapel = '';
 
-/* ===== INIT KELAS & ABSEN ===== */
-for(let i=1;i<=10;i++){
- regKelas.innerHTML += `<option value="X-${i}">X-${i}</option>`;
+/* ===== INIT KELAS & ABSEN (FIXED) ===== */
+for (let i = 1; i <= 10; i++) {
+  regKelas.innerHTML += `<option value="X-${i}">X-${i}</option>`;
 }
-for(let i=1;i<=40;i++){
- regAbsen.innerHTML += `<option value="${i}">${i}</option>`;
+for (let i = 1; i <= 40; i++) {
+  regAbsen.innerHTML += `<option value="${i}">${i}</option>`;
 }
 
 /* ===== LOGIN ===== */
 function login(){
- let u = loginUser.value;
- let p = loginPass.value;
+ let u=loginUser.value, p=loginPass.value;
 
  if(u==='guru' && p==='admin123'){
   loginBox.classList.add('hidden');
@@ -150,7 +148,7 @@ function login(){
   return;
  }
 
- let s = siswa.find(x=>x.username===u && x.password===p);
+ let s=siswa.find(x=>x.username===u && x.password===p);
  if(!s){
   infoLogin.innerText='Belum punya akun, silahkan klik Daftar';
   return;
@@ -158,7 +156,7 @@ function login(){
 
  loginBox.classList.add('hidden');
  menuSiswa.classList.remove('hidden');
- infoSiswa.innerText = `Selamat datang, ${s.nama} | ${s.kelas} | Absen ${s.absen}`;
+ infoSiswa.innerText=`Selamat datang, ${s.nama} | ${s.kelas} | Absen ${s.absen}`;
 }
 
 /* ===== REGISTER ===== */
@@ -173,17 +171,17 @@ function backLogin(){
 }
 
 function registerSiswa(){
- if(!regNama.value || !regUser.value || !regPass.value || !regKelas.value || !regAbsen.value){
+ if(!regNama.value||!regUser.value||!regPass.value||!regKelas.value||!regAbsen.value){
   alert('Semua data wajib diisi');
   return;
  }
 
  siswa.push({
-  nama: regNama.value,
-  username: regUser.value,
-  password: regPass.value,
-  kelas: regKelas.value,
-  absen: regAbsen.value
+  nama:regNama.value,
+  username:regUser.value,
+  password:regPass.value,
+  kelas:regKelas.value,
+  absen:regAbsen.value
  });
 
  localStorage.setItem('siswa',JSON.stringify(siswa));
