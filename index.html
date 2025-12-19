@@ -31,7 +31,7 @@
 </head>
 <body class="text-gray-800 h-screen flex flex-col overflow-hidden relative">
 
-    <!-- HALAMAN LOGIN -->
+    <!-- HALAMAN AUTH (LOGIN & DAFTAR) -->
     <div id="auth-page" class="flex-1 flex items-center justify-center p-4 bg-[#fefce8]">
         <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-sm:p-6 max-w-sm text-center fade-in border border-yellow-100">
             <!-- Logo Dinamis -->
@@ -40,21 +40,53 @@
             </div>
             
             <h1 id="main-title" class="text-2xl font-bold text-amber-900 leading-tight">LMS Kimia</h1>
-            <p id="main-subtitle" class="text-sm text-amber-700 mb-8">Portal Pembelajaran Digital Kimia</p>
+            <p id="main-subtitle" class="text-sm text-amber-700 mb-6">Portal Pembelajaran Digital Kimia</p>
 
-            <form id="login-form" class="space-y-4 text-left">
-                <div>
-                    <label class="text-xs font-bold text-amber-600 uppercase ml-1">Username</label>
-                    <input type="text" id="login-username" class="w-full px-4 py-3 rounded-xl border border-yellow-100 bg-amber-50 focus:ring-2 focus:ring-amber-500 outline-none transition" placeholder="Username">
-                </div>
-                <div>
-                    <label class="text-xs font-bold text-amber-600 uppercase ml-1">Password</label>
-                    <input type="password" id="login-password" class="w-full px-4 py-3 rounded-xl border border-yellow-100 bg-amber-50 focus:ring-2 focus:ring-amber-500 outline-none transition" placeholder="••••••••">
-                </div>
-                <button type="submit" class="w-full bg-amber-500 text-white font-bold py-3 rounded-xl hover:bg-amber-600 transition shadow-lg shadow-yellow-200">
-                    Masuk ke Kelas
-                </button>
-            </form>
+            <!-- Form Login -->
+            <div id="login-section">
+                <form id="login-form" class="space-y-4 text-left">
+                    <div>
+                        <label class="text-xs font-bold text-amber-600 uppercase ml-1">Username</label>
+                        <input type="text" id="login-username" class="w-full px-4 py-3 rounded-xl border border-yellow-100 bg-amber-50 focus:ring-2 focus:ring-amber-500 outline-none transition" placeholder="Username" required>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-amber-600 uppercase ml-1">Password</label>
+                        <input type="password" id="login-password" class="w-full px-4 py-3 rounded-xl border border-yellow-100 bg-amber-50 focus:ring-2 focus:ring-amber-500 outline-none transition" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="w-full bg-amber-500 text-white font-bold py-3 rounded-xl hover:bg-amber-600 transition shadow-lg shadow-yellow-200">
+                        Masuk ke Kelas
+                    </button>
+                </form>
+                <p class="mt-6 text-sm text-gray-500">
+                    Belum punya akun? 
+                    <button onclick="toggleAuth(false)" class="text-amber-700 font-bold hover:underline">Daftar Sekarang</button>
+                </p>
+            </div>
+
+            <!-- Form Daftar (Default Hidden) -->
+            <div id="register-section" class="hidden">
+                <form id="register-form" class="space-y-4 text-left">
+                    <div>
+                        <label class="text-xs font-bold text-amber-600 uppercase ml-1">Nama Lengkap</label>
+                        <input type="text" id="reg-name" class="w-full px-4 py-3 rounded-xl border border-yellow-100 bg-amber-50 focus:ring-2 focus:ring-amber-500 outline-none transition" placeholder="Nama Anda" required>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-amber-600 uppercase ml-1">Username Baru</label>
+                        <input type="text" id="reg-username" class="w-full px-4 py-3 rounded-xl border border-yellow-100 bg-amber-50 focus:ring-2 focus:ring-amber-500 outline-none transition" placeholder="Username" required>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-amber-600 uppercase ml-1">Password</label>
+                        <input type="password" id="reg-password" class="w-full px-4 py-3 rounded-xl border border-yellow-100 bg-amber-50 focus:ring-2 focus:ring-amber-500 outline-none transition" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="w-full bg-amber-600 text-white font-bold py-3 rounded-xl hover:bg-amber-700 transition shadow-lg shadow-yellow-200">
+                        Buat Akun Siswa
+                    </button>
+                </form>
+                <p class="mt-6 text-sm text-gray-500">
+                    Sudah punya akun? 
+                    <button onclick="toggleAuth(true)" class="text-amber-700 font-bold hover:underline">Kembali Login</button>
+                </p>
+            </div>
         </div>
     </div>
 
@@ -66,7 +98,7 @@
                 <div id="sidebar-logo-circle" class="w-8 h-8 rounded-full overflow-hidden bg-amber-900 flex items-center justify-center border border-amber-800">
                      <!-- Diisi via JS -->
                 </div>
-                <span id="sidebar-title" class="font-bold text-lg tracking-tight">LMS Kimia</span>
+                <span id="sidebar-title" class="font-bold text-lg tracking-tight text-amber-100">LMS Kimia</span>
             </div>
             <nav class="flex-1 p-4">
                 <p class="text-xs text-amber-500 uppercase font-bold mb-4 tracking-widest">Menu Utama</p>
@@ -83,6 +115,9 @@
                     </li>
                 </ul>
             </nav>
+            <div class="p-4 border-t border-amber-900 text-xs text-amber-600 text-center">
+                User: <span id="current-user-display" class="font-bold"></span>
+            </div>
         </aside>
         
         <!-- Area Konten -->
@@ -100,6 +135,21 @@
             appName: 'Kelas Kimia Bu Lina',
             appSubtitle: 'Portal Pembelajaran Digital Kimia'
         };
+
+        let currentUser = null;
+
+        // Inisialisasi Database Sederhana
+        const db = {
+            users: [
+                { username: 'guru', password: 'guru123', name: 'Bu Lina', role: 'Guru' },
+                { username: 'siswa', password: '123', name: 'Siswa Contoh', role: 'Siswa' }
+            ]
+        };
+
+        function toggleAuth(showLogin) {
+            document.getElementById('login-section').classList.toggle('hidden', !showLogin);
+            document.getElementById('register-section').classList.toggle('hidden', showLogin);
+        }
 
         function applyConfiguration() {
             document.title = SCHOOL_CONFIG.appName;
@@ -121,10 +171,7 @@
             });
         }
 
-        const db = {
-            users: [{ username: 'guru', password: 'guru123', name: 'Bu Lina', role: 'Guru' }]
-        };
-
+        // Logic Login
         document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const u = document.getElementById('login-username').value;
@@ -132,32 +179,65 @@
 
             const user = db.users.find(usr => usr.username === u && usr.password === p);
             if (user) {
-                document.getElementById('auth-page').classList.add('hidden');
-                document.getElementById('app-dashboard').classList.remove('hidden');
-                renderDashboard();
+                loginUser(user);
             } else {
                 alert('Username atau password salah!');
             }
         });
 
+        // Logic Daftar
+        document.getElementById('register-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            const user = document.getElementById('reg-username').value;
+            const pass = document.getElementById('reg-password').value;
+
+            if (db.users.some(u => u.username === user)) {
+                alert('Username sudah digunakan!');
+                return;
+            }
+
+            const newUser = { username: user, password: pass, name: name, role: 'Siswa' };
+            db.users.push(newUser);
+            alert('Pendaftaran berhasil! Silakan login.');
+            toggleAuth(true);
+        });
+
+        function loginUser(user) {
+            currentUser = user;
+            document.getElementById('auth-page').classList.add('hidden');
+            document.getElementById('app-dashboard').classList.remove('hidden');
+            document.getElementById('current-user-display').innerText = user.name;
+            renderDashboard();
+        }
+
         function renderDashboard() {
+            const roleText = currentUser.role === 'Guru' ? 'Pengajar' : 'Siswa';
             document.getElementById('content-area').innerHTML = `
                 <div class="fade-in">
-                    <h2 class="text-3xl font-bold text-amber-900 mb-4">Selamat Datang, Pengajar!</h2>
+                    <h2 class="text-3xl font-bold text-amber-900 mb-4 text-center md:text-left">Halo, ${currentUser.name}!</h2>
+                    <p class="text-amber-700 mb-8 text-center md:text-left">Selamat datang kembali di portal ${roleText}.</p>
+                    
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <!-- Card dengan warna kuning lebih gelap -->
                         <div class="bg-amber-500 p-6 rounded-2xl text-white shadow-lg shadow-amber-200">
-                            <p class="opacity-80 uppercase text-xs font-bold tracking-widest">Materi</p>
+                            <p class="opacity-80 uppercase text-xs font-bold tracking-widest">Materi Tersedia</p>
                             <h3 class="text-2xl font-bold mt-1">12 Materi</h3>
                         </div>
                         <div class="bg-yellow-600 p-6 rounded-2xl text-white shadow-lg shadow-yellow-200">
-                            <p class="opacity-80 uppercase text-xs font-bold tracking-widest">Siswa</p>
-                            <h3 class="text-2xl font-bold mt-1">36 Siswa</h3>
+                            <p class="opacity-80 uppercase text-xs font-bold tracking-widest">Tugas Selesai</p>
+                            <h3 class="text-2xl font-bold mt-1">5 Tugas</h3>
                         </div>
                     </div>
-                    <div class="mt-10 bg-white/60 backdrop-blur p-6 rounded-2xl border border-yellow-200">
-                        <p class="text-amber-800 italic text-sm font-medium text-center">
-                            <i class="fas fa-info-circle mr-2"></i>Dashboard Pengajar: Kelola materi kimia dengan mudah dalam satu pintu.
+
+                    <div class="mt-10 bg-white/60 backdrop-blur p-8 rounded-3xl border border-yellow-200 shadow-sm">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-amber-600">
+                                <i class="fas fa-bullhorn text-xl"></i>
+                            </div>
+                            <h4 class="font-bold text-amber-900 text-lg">Pengumuman Terbaru</h4>
+                        </div>
+                        <p class="text-amber-800 leading-relaxed">
+                            Jangan lupa mengumpulkan tugas praktikum Kimia Organik paling lambat hari Jumat depan. Semangat belajar!
                         </p>
                     </div>
                 </div>
