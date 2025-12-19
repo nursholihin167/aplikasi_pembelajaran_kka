@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelas Digital Bu Lina- LMS Kimia </title>
-    <!-- Tailwind CSS untuk styling modern & cepat -->
+    <title>Kelas Digital Bu Lina - LMS Kimia</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome untuk Ikon -->
+    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
@@ -19,15 +19,12 @@
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
+
+        /* Logo Styling */
+        .logo-container img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
     </style>
 </head>
-<body class="text-gray-800 h-screen flex flex-col overflow-hidden">
+<body class="text-gray-800 h-screen flex flex-col overflow-hidden relative">
 
     <!-- NOTIFIKASI / TOAST -->
     <div id="toast" class="fixed top-5 right-5 z-50 transform translate-x-full transition-transform duration-300">
@@ -37,15 +34,54 @@
         </div>
     </div>
 
+    <!-- PETUNJUK ADMIN (Ganti Foto) - Toggle Button -->
+    <div class="absolute top-4 left-4 z-40">
+        <button onclick="toggleAdminGuide()" class="bg-gray-800 text-white px-3 py-1 text-xs rounded shadow opacity-70 hover:opacity-100 transition">
+            <i class="fas fa-cog mr-1"></i> Ganti Foto & Nama
+        </button>
+    </div>
+
+    <!-- MODAL PETUNJUK ADMIN -->
+    <div id="admin-guide" class="fixed inset-0 bg-black bg-opacity-70 z-50 hidden flex items-center justify-center fade-in p-4">
+        <div class="bg-white rounded-xl max-w-lg w-full p-6 shadow-2xl relative">
+            <button onclick="toggleAdminGuide()" class="absolute top-4 right-4 text-gray-400 hover:text-red-500">
+                <i class="fas fa-times fa-lg"></i>
+            </button>
+            <h3 class="text-xl font-bold text-gray-900 mb-4 border-b pb-2">Panduan Mengganti Foto & Nama</h3>
+            <div class="space-y-4 text-sm text-gray-700">
+                <p>Karena aplikasi ini berjalan di <b>GitHub Pages (Statis)</b>, Anda tidak bisa mengganti foto secara permanen melalui tombol upload biasa (data akan hilang saat refresh).</p>
+                
+                <div class="bg-yellow-50 p-4 rounded border border-yellow-200">
+                    <p class="font-bold text-yellow-800 mb-2">Langkah Mengganti Foto:</p>
+                    <ol class="list-decimal list-inside space-y-1 ml-1">
+                        <li>Buka file <code>index.html</code> ini di editor kode (GitHub Edit).</li>
+                        <li>Scroll ke bawah sampai tag <code>&lt;script&gt;</code> (sekitar baris 160).</li>
+                        <li>Cari bagian <b>KONFIGURASI SEKOLAH</b>.</li>
+                        <li>Ganti URL pada <code>logoUrl</code> dengan link foto Anda.</li>
+                        <li>Ganti teks pada <code>schoolName</code> untuk mengubah judul.</li>
+                        <li>Simpan file (Commit Changes).</li>
+                    </ol>
+                </div>
+                <p class="text-xs text-gray-500"><i>Tips: Gunakan link gambar dari Google Drive (publik), Imgur, atau upload file gambar ke repository GitHub Anda lalu salin link-nya.</i></p>
+            </div>
+            <div class="mt-6 text-right">
+                <button onclick="toggleAdminGuide()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Saya Mengerti</button>
+            </div>
+        </div>
+    </div>
+
     <!-- HALAMAN LOGIN / REGISTER -->
     <div id="auth-page" class="flex-1 flex items-center justify-center p-4">
         <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md fade-in">
             <div class="text-center mb-8">
-                <div class="bg-blue-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-white text-2xl shadow-lg">
-                    <i class="fas fa-graduation-cap"></i>
+                <!-- Logo Area Dinamis -->
+                <div class="logo-container bg-blue-600 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 text-white text-3xl shadow-lg overflow-hidden border-4 border-blue-50">
+                    <img id="app-logo-img" src="" alt="Logo" class="hidden" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <i id="app-logo-icon" class="fas fa-graduation-cap"></i>
                 </div>
-                <h1 class="text-2xl font-bold text-gray-900">LMS Kimia</h1>
-                <p class="text-gray-500 text-sm">Portal Pembelajaran Kimia Bu Lina</p>
+                
+                <h1 id="app-title" class="text-2xl font-bold text-gray-900">LMS Kimia</h1>
+                <p id="app-subtitle" class="text-gray-500 text-sm">Portal Pembelajaran Digital</p>
             </div>
 
             <!-- Login Form -->
@@ -116,8 +152,11 @@
         <!-- Sidebar -->
         <aside class="w-full md:w-64 bg-slate-900 text-white flex flex-col shadow-2xl z-20">
             <div class="p-6 border-b border-slate-700 flex items-center gap-3">
-                <i class="fas fa-graduation-cap text-yellow-400 text-2xl"></i>
-                <span class="font-bold text-xl tracking-tight">LMS Kimia</span>
+                <div class="w-8 h-8 rounded-full overflow-hidden bg-slate-700 flex items-center justify-center">
+                     <img id="sidebar-logo-img" src="" alt="Logo" class="hidden w-full h-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                     <i id="sidebar-logo-icon" class="fas fa-graduation-cap text-yellow-400"></i>
+                </div>
+                <span id="sidebar-title" class="font-bold text-lg tracking-tight">LMS Kimia</span>
             </div>
             
             <!-- User Info Mini -->
@@ -143,7 +182,7 @@
         <main class="flex-1 flex flex-col overflow-hidden bg-gray-50 relative">
             <!-- Header Mobile Only -->
             <header class="md:hidden bg-white p-4 shadow-sm flex justify-between items-center">
-                <span class="font-bold text-gray-800">LMS Kimia</span>
+                <span id="mobile-header-title" class="font-bold text-gray-800">LMS Kimia</span>
                 <button onclick="alert('Gunakan tampilan Desktop untuk fitur admin penuh')" class="text-gray-600"><i class="fas fa-bars"></i></button>
             </header>
 
@@ -156,8 +195,68 @@
 
     <!-- Javascript Logic -->
     <script>
+        // ==========================================
+        // KONFIGURASI SEKOLAH (EDIT DI SINI)
+        // ==========================================
+        const SCHOOL_CONFIG = {
+            // Ganti URL di bawah ini dengan link gambar logo Anda
+            // Contoh: 'https://sekolah.sch.id/logo.png' atau link dari Google Drive/Imgur
+            // Jika kosong (''), akan menggunakan ikon topi wisuda default.
+            logoUrl: '', 
+            
+            // Nama Aplikasi / Sekolah
+            appName: 'Kelas Kimia Bu Lina',
+            appSubtitle: 'Portal Pembelajaran Digital'
+        };
+
+        // --- 0. INIT UI CONFIG ---
+        function applyConfig() {
+            // Update Text
+            document.title = SCHOOL_CONFIG.appName;
+            document.getElementById('app-title').innerText = SCHOOL_CONFIG.appName;
+            document.getElementById('app-subtitle').innerText = SCHOOL_CONFIG.appSubtitle;
+            document.getElementById('sidebar-title').innerText = SCHOOL_CONFIG.appName;
+            document.getElementById('mobile-header-title').innerText = SCHOOL_CONFIG.appName;
+
+            // Update Logo Logic
+            const logoImg = document.getElementById('app-logo-img');
+            const logoIcon = document.getElementById('app-logo-icon');
+            const sidebarImg = document.getElementById('sidebar-logo-img');
+            const sidebarIcon = document.getElementById('sidebar-logo-icon');
+
+            if (SCHOOL_CONFIG.logoUrl && SCHOOL_CONFIG.logoUrl.trim() !== '') {
+                // Show Image
+                logoImg.src = SCHOOL_CONFIG.logoUrl;
+                logoImg.classList.remove('hidden');
+                logoImg.style.display = 'block';
+                logoIcon.classList.add('hidden');
+                logoIcon.style.display = 'none';
+
+                sidebarImg.src = SCHOOL_CONFIG.logoUrl;
+                sidebarImg.classList.remove('hidden');
+                sidebarImg.style.display = 'block';
+                sidebarIcon.classList.add('hidden');
+                sidebarIcon.style.display = 'none';
+            } else {
+                // Show Icon (Default)
+                logoImg.classList.add('hidden');
+                logoIcon.classList.remove('hidden');
+                sidebarImg.classList.add('hidden');
+                sidebarIcon.classList.remove('hidden');
+            }
+        }
+
+        function toggleAdminGuide() {
+            const modal = document.getElementById('admin-guide');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
         // --- 1. CONFIG & STATE ---
-        const DB_KEY = 'edusiswa_db_v1';
+        const DB_KEY = 'edusiswa_db_chem_v1';
         let currentUser = null;
 
         // --- 2. DATABASE UTILS (LOCALSTORAGE) ---
@@ -174,11 +273,11 @@
         function initDB() {
             const initialData = {
                 users: [
-                    { id: 'guru1', role: 'teacher', name: 'Bpk. Admin Guru', username: 'guru', password: 'guru123' }
+                    { id: 'guru1', role: 'teacher', name: 'Bu Lina (Guru)', username: 'guru', password: 'guru123' }
                 ],
                 subjects: [
-                    { id: 'sub1', name: 'Informatika', description: 'Logika, Algoritma, dan Pemrograman' },
-                    { id: 'sub2', name: 'Bahasa Indonesia', description: 'Tata Bahasa dan Sastra' }
+                    { id: 'sub1', name: 'Kimia Dasar', description: 'Pengenalan ilmu kimia' },
+                    { id: 'sub2', name: 'Stoikiometri', description: 'Perhitungan kimia' }
                 ],
                 materials: [],
                 quizzes: [],
@@ -192,7 +291,7 @@
         
         // Populate Class Dropdown
         const classSelect = document.getElementById('reg-class');
-        for(let i=1; i<=10; i++) {
+        for(let i=1; i<=6; i++) { // Kimia biasanya XI, XII, tapi kita set umum X-1 s/d X-6
             let opt = document.createElement('option');
             opt.value = `X-${i}`;
             opt.innerText = `Kelas X-${i}`;
@@ -255,6 +354,7 @@
             document.getElementById('auth-page').classList.add('hidden');
             document.getElementById('app-dashboard').classList.remove('hidden');
             document.getElementById('app-dashboard').classList.add('flex');
+            document.querySelector('.absolute.top-4.left-4').classList.add('hidden'); // Hide admin guide button
             
             // Set User Info
             document.getElementById('user-display-name').innerText = user.name;
@@ -271,6 +371,7 @@
             document.getElementById('app-dashboard').classList.add('hidden');
             document.getElementById('app-dashboard').classList.remove('flex');
             document.getElementById('auth-page').classList.remove('hidden');
+            document.querySelector('.absolute.top-4.left-4').classList.remove('hidden'); // Show admin guide button
             document.getElementById('login-form').reset();
         }
 
@@ -284,15 +385,15 @@
             if(currentUser.role === 'teacher') {
                 items = [
                     { icon: 'fa-home', text: 'Dashboard', action: renderTeacherDashboard },
-                    { icon: 'fa-book', text: 'Kelola Materi', action: renderManageMaterials },
-                    { icon: 'fa-tasks', text: 'Bank Soal', action: renderManageQuizzes },
-                    { icon: 'fa-chart-bar', text: 'Rekap Nilai', action: renderTeacherGrades }
+                    { icon: 'fa-flask', text: 'Kelola Materi', action: renderManageMaterials },
+                    { icon: 'fa-clipboard-list', text: 'Bank Soal', action: renderManageQuizzes },
+                    { icon: 'fa-chart-line', text: 'Rekap Nilai', action: renderTeacherGrades }
                 ];
             } else {
                 items = [
                     { icon: 'fa-home', text: 'Dashboard', action: renderStudentDashboard },
-                    { icon: 'fa-book-reader', text: 'Materi Belajar', action: renderStudentMaterials },
-                    { icon: 'fa-pen-to-square', text: 'Tugas & Latihan', action: renderStudentQuizzes },
+                    { icon: 'fa-book-open', text: 'Materi Belajar', action: renderStudentMaterials },
+                    { icon: 'fa-pencil-alt', text: 'Tugas & Latihan', action: renderStudentQuizzes },
                     { icon: 'fa-history', text: 'Riwayat', action: renderStudentHistory }
                 ];
             }
@@ -306,7 +407,6 @@
                     </button>
                 `;
                 li.onclick = () => {
-                    // Active state logic could go here
                     item.action();
                 };
                 menu.appendChild(li);
@@ -315,7 +415,6 @@
 
         function setContent(html) {
             const container = document.getElementById('content-area');
-            // Reset animation
             container.classList.remove('fade-in');
             void container.offsetWidth; // trigger reflow
             container.classList.add('fade-in');
@@ -339,7 +438,7 @@
                         <div class="text-3xl font-bold text-gray-800 mt-2">${studentCount}</div>
                     </div>
                     <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
-                        <div class="text-gray-500 text-sm font-semibold uppercase">Materi</div>
+                        <div class="text-gray-500 text-sm font-semibold uppercase">Materi Kimia</div>
                         <div class="text-3xl font-bold text-gray-800 mt-2">${materialCount}</div>
                     </div>
                     <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
@@ -386,7 +485,7 @@
             
             let html = `
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Kelola Materi</h2>
+                    <h2 class="text-2xl font-bold text-gray-800">Kelola Materi Kimia</h2>
                     <button onclick="showAddMaterialModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md">
                         <i class="fas fa-plus mr-2"></i> Tambah Materi
                     </button>
@@ -427,7 +526,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-bold text-gray-700 mb-1">Judul Materi</label>
-                                <input type="text" id="mat-title" class="w-full border rounded p-2" required placeholder="Contoh: Pengenalan Algoritma">
+                                <input type="text" id="mat-title" class="w-full border rounded p-2" required placeholder="Contoh: Ikatan Kimia">
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
@@ -499,7 +598,6 @@
         }
 
         function showCreateQuizStep1() {
-            // Simplified for prototype: Prompt for title & subject first
             const db = getDB();
             const subjectOpts = db.subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
             
@@ -674,7 +772,6 @@
 
         function renderStudentDashboard() {
             const db = getDB();
-            // Get recent materials
             const recentMats = db.materials.slice(-3);
             
             setContent(`
@@ -696,7 +793,7 @@
                     </div>
                     <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                         <h3 class="font-bold text-gray-800 mb-4">Pengumuman Kelas</h3>
-                        <p class="text-gray-600 text-sm">Jangan lupa mengerjakan tugas Informatika Bab 1 sebelum hari Jumat. Persiapkan diri untuk PTS minggu depan.</p>
+                        <p class="text-gray-600 text-sm">Pelajari materi Stoikiometri sebelum pertemuan minggu depan. Jangan lupa kerjakan kuis yang tersedia.</p>
                     </div>
                 </div>
 
@@ -725,7 +822,7 @@
                     html += `
                         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                             <div class="bg-gray-50 px-6 py-3 border-b border-gray-100 font-bold text-gray-700 flex items-center gap-2">
-                                <i class="fas fa-book-open text-blue-500"></i> ${sub.name}
+                                <i class="fas fa-flask text-blue-500"></i> ${sub.name}
                             </div>
                             <div class="divide-y divide-gray-100">
                                 ${subMats.map(m => `
@@ -763,9 +860,6 @@
 
         function renderStudentQuizzes() {
             const db = getDB();
-            // Filter quizzes user hasn't taken (simple version: allow retake but show history)
-            // Ideally check db.submissions
-            
             let html = `<h2 class="text-2xl font-bold mb-6">Tugas & Latihan Soal</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
             
             db.quizzes.forEach(q => {
@@ -953,15 +1047,9 @@
         // --- INIT ---
         window.onload = () => {
             initDB();
-            // Check if login session persists? (Simplified: Just clear session on reload for security in this demo, or uncomment below to auto-login)
-            // const savedUser = localStorage.getItem('edu_session');
-            // if(savedUser) loginUser(JSON.parse(savedUser));
+            applyConfig(); // Terapkan konfigurasi sekolah (foto/nama)
         };
 
     </script>
 </body>
 </html>
-
-
-
-
