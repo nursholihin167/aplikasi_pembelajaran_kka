@@ -271,6 +271,8 @@
                 m += `<li><button onclick="renderGuruMateri()" class="w-full text-left p-3 rounded-xl hover:bg-amber-800 flex items-center gap-3 transition focus:bg-amber-800"><i class="fas fa-folder-plus w-5"></i> Kelola Materi</button></li>`;
                 m += `<li><button onclick="renderGuruKuis()" class="w-full text-left p-3 rounded-xl hover:bg-amber-800 flex items-center gap-3 transition focus:bg-amber-800"><i class="fas fa-tasks w-5"></i> Kelola Tugas/Kuis</button></li>`;
                 m += `<li><button onclick="renderGuruPenilaian()" class="w-full text-left p-3 rounded-xl hover:bg-amber-800 flex items-center gap-3 transition focus:bg-amber-800"><i class="fas fa-check-double w-5"></i> Ruang Penilaian</button></li>`;
+                // MENU REKAP NILAI DITAMBAHKAN DISINI
+                m += `<li><button onclick="renderGuruRekap()" class="w-full text-left p-3 rounded-xl hover:bg-amber-800 flex items-center gap-3 transition focus:bg-amber-800"><i class="fas fa-file-excel w-5"></i> Rekap Nilai</button></li>`;
             }
 
             m += `<li><button onclick="location.reload()" class="w-full text-left p-3 rounded-xl hover:bg-red-900 mt-8 flex items-center gap-3 text-red-300 transition"><i class="fas fa-sign-out-alt w-5"></i> Logout</button></li>`;
@@ -761,6 +763,119 @@
             renderGuruPenilaian();
         }
 
+        /* ---------------------------------------------------------
+           FITUR BARU: REKAP NILAI (TABLE & EXPORT EXCEL)
+           --------------------------------------------------------- */
+        function renderGuruRekap() {
+            const users = getUsers().filter(u => u.role === 'Siswa');
+            const assignments = getContents().assignments;
+            const submissions = getSubmissions();
+
+            // Urutkan siswa berdasarkan Kelas, lalu Nama
+            users.sort((a, b) => (a.kelas > b.kelas) ? 1 : ((b.kelas > a.kelas) ? -1 : 0));
+
+            let html = `
+                <div class="fade-in max-w-6xl">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                        <h2 class="text-2xl font-bold text-amber-900">Rekap Nilai Siswa</h2>
+                        <button onclick="downloadExcel()" class="bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 flex items-center gap-2 shadow-lg transition transform active:scale-95">
+                            <i class="fas fa-file-excel"></i> Download Excel
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-amber-200 overflow-x-auto">
+                        <table class="w-full text-left border-collapse" id="rekap-table">
+                            <thead>
+                                <tr class="bg-amber-100 text-amber-800 text-sm uppercase">
+                                    <th class="p-4 border-b border-amber-200">No</th>
+                                    <th class="p-4 border-b border-amber-200 min-w-[150px]">Nama Siswa</th>
+                                    <th class="p-4 border-b border-amber-200">Kelas</th>
+                                    ${assignments.map(a => `<th class="p-4 border-b border-amber-200 whitespace-nowrap min-w-[120px]" title="${a.title}">${a.title.length > 20 ? a.title.substring(0,18)+'...' : a.title}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm text-gray-700">
+            `;
+
+            if(users.length === 0) {
+                 html += `<tr><td colspan="${3 + assignments.length}" class="p-6 text-center italic text-gray-400">Belum ada siswa terdaftar dalam sistem.</td></tr>`;
+            } else {
+                users.forEach((u, i) => {
+                    html += `<tr class="hover:bg-amber-50 border-b border-gray-100 transition">
+                        <td class="p-4 text-gray-500">${i+1}</td>
+                        <td class="p-4 font-bold text-gray-800">${u.name}</td>
+                        <td class="p-4"><span class="bg-gray-100 px-2 py-1 rounded text-xs font-bold text-gray-600 border border-gray-200">${u.kelas}</span></td>`;
+                    
+                    assignments.forEach(a => {
+                        const sub = submissions.find(s => s.studentUser === u.username && s.assignmentId == a.id);
+                        let scoreDisplay = '-';
+                        if(sub) {
+                             if(sub.status === 'graded') {
+                                 const color = sub.score >= 75 ? 'text-green-600' : 'text-red-500';
+                                 scoreDisplay = `<span class="font-bold ${color}">${sub.score}</span>`;
+                             } else {
+                                 scoreDisplay = '<span class="text-amber-500 font-bold" title="Menunggu Penilaian">?</span>';
+                             }
+                        }
+                        html += `<td class="p-4 text-center border-l border-gray-50">${scoreDisplay}</td>`;
+                    });
+
+                    html += `</tr>`;
+                });
+            }
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            document.getElementById('content-area').innerHTML = html;
+        }
+
+        function downloadExcel() {
+            const table = document.getElementById("rekap-table");
+            if (!table) return;
+
+            // Membuat template HTML sederhana agar Excel bisa membacanya sebagai Worksheet
+            let html = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head>
+                    <!--[if gte mso 9]>
+                    <xml>
+                        <x:ExcelWorkbook>
+                            <x:ExcelWorksheets>
+                                <x:ExcelWorksheet>
+                                    <x:Name>Rekap Nilai</x:Name>
+                                    <x:WorksheetOptions>
+                                        <x:DisplayGridlines/>
+                                    </x:WorksheetOptions>
+                                </x:ExcelWorksheet>
+                            </x:ExcelWorksheets>
+                        </x:ExcelWorkbook>
+                    </xml>
+                    <![endif]-->
+                    <style>
+                        table { border-collapse: collapse; width: 100%; }
+                        th, td { border: 1px solid #000000; padding: 8px; text-align: left; }
+                        th { background-color: #fef3c7; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    ${table.outerHTML}
+                </body>
+                </html>
+            `;
+            
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Rekap_Nilai_Siswa_LMS.xls';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
 
         /* ---------------------------------------------------------
            FITUR SISWA
